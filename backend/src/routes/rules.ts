@@ -9,7 +9,7 @@ ruleRouter.get("/", async (_req, res) => {
   res.json(rows);
 });
 
-// Validation helpers
+
 // Validation helpers
 const validWeekdays = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 const validShiftTypes = ["FULLDAY", "AM", "PM"];
@@ -95,4 +95,4 @@ ruleRouter.delete("/:id", async (req, res) => {
   }
 });
 
-export default ruleRouter; // ✅ export par défaut
+export default ruleRouter;

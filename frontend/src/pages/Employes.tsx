@@ -7,7 +7,8 @@ interface Employee {
   id: number;
   name: string;
   level: number;
-  fixed_off_day: string | null;
+  off_day_1: string | null;
+  off_day_2: string | null;
   base_type: "CUISINE" | "SALLE" | "BAR";
   positions: string[]; // noms des postes associés
 }
@@ -91,7 +92,8 @@ export default function Employes() {
         body: JSON.stringify({
           name: "Nouvel employé",
           level: 0,
-          fixed_off_day: "MON",
+          off_day_1: "MON",
+          off_day_2: null,
           base_type: "SALLE",
           positions: [], // par défaut aucun poste
         }),
@@ -155,13 +157,28 @@ export default function Employes() {
                     </button>
                   </div>
 
-                  {/* Jour de repos */}
+                  {/* Jours de repos */}
                   <div>
-                    <label>Repos</label>
+                    <label>Repos 1</label>
                     <select
-                      value={edited.fixed_off_day || "MON"}
-                      onChange={(e) => handleLocalChange(emp.id, "fixed_off_day", e.target.value)}
+                      value={edited.off_day_1 || "MON"}
+                      onChange={(e) => handleLocalChange(emp.id, "off_day_1", e.target.value)}
                     >
+                      {jours.map((jour) => (
+                        <option key={jour} value={jour}>
+                          {joursLabel[jour]}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label>Repos 2</label>
+                    <select
+                      value={edited.off_day_2 || ""}
+                      onChange={(e) => handleLocalChange(emp.id, "off_day_2", e.target.value)}
+                    >
+                      <option value="">—</option>
                       {jours.map((jour) => (
                         <option key={jour} value={jour}>
                           {joursLabel[jour]}
