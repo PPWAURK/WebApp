@@ -1,0 +1,42 @@
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 1rem;
+  background: #fddede;
+  border-top: 1px solid #e5e5e5;
+}
+
+.date-btn {
+    width: 150px;
+    height: 64px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: black;
+}
+
+.date-btn:hover {
+  background: #f3f3f3;
+}
+
+.order-btn {
+    margin-left: 2%;
+    width: 150px;
+    height: 64px;
+  background: #b91c1c;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+}
+
+.order-btn:hover {
+  background: #991b1b;
+}

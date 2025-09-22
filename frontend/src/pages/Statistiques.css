@@ -1,0 +1,85 @@
+.page {
+  min-height: 100vh;
+    background-color: white;
+}
+
+.stats-main {
+margin: 2%;
+  padding: 20px;
+  height: 100%;
+  border-radius: 20px;
+   background-color: #fddede;
+}
+
+.stats-date {
+  display: inline-block;
+  background: rgba(0,0,0,0.1);
+  padding: 5px 12px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.stats-card {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+  color: black;
+}
+
+.stats-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: lavender;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-right: 15px;
+}
+
+.stats-info {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stats-name {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.stats-quantity {
+  font-size: 14px;
+  color: #333;
+}
+
+.SelectText{
+  color:black;
+  font-size: 22px;
+  font-weight: bold;
+  text-align: center;
+  align-items: center;
+}
+
+.select{
+  background-color: white;
+  color: black;
+  height: 50px;
+  border-radius: 15px;
+  text-align: center;
+  font-size: 14px;
+  width: 150px;
+  margin: 2%;
+}

@@ -1,0 +1,31 @@
+.category-tabs {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 1rem;
+  margin: 2%;
+  background-color: #E4AFB0;
+  border-radius: 15px;
+  align-items: center;
+}
+
+.category-button {
+    height: 50px;
+    padding: 0.25rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    align-items: center;
+}
+
+.category-button.active {
+  background-color: white;
+  color: #b91c1c;
+  font-weight: bold;
+}
+
+.category-button.inactive {
+  background-color: #E4AFB0;
+  color: white;
+}

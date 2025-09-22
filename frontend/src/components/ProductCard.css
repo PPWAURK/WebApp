@@ -1,0 +1,97 @@
+/* src/components/ProductCard.css */
+
+.product-card {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0px 2px 5px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.18s ease;
+}
+
+button{
+    padding:6px 15px;
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+}
+
+.product-image {
+  width: 100%;
+  height: 170px; /* ajuste selon besoin */
+  background-color: #f3f3f3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* pied de la carte : nom + pastille quantité */
+.product-footer {
+margin-top: 10%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* nom à gauche */
+.product-name {
+  margin: 1%;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #111;
+}
+
+.product-price {
+  margin: 1%;
+  font-size:1rem;
+  font-weight: 500;
+  color: #111;
+}
+
+/* pastille rouge (rounded pill) */
+.qty-pill {
+  display: flex;
+  align-items: center;
+  background: #b91c1c;
+  padding: 5px 5px;
+  border-radius: 20px;
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,0.06);
+}
+.qty-btn {
+  width: 18px;
+  border-radius: 50%;
+  border: none;
+  background: #fff;
+  color: #b91c1c;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.qty-btn:active {
+  transform: translateY(1px);
+}
+
+.qty-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.qty-number {
+  color: #fff;
+  font-weight: 700;
+  min-width: 20px;
+  text-align: center;
+  font-size: 0.95rem;
+}

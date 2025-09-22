@@ -1,0 +1,26 @@
+.type-filter div{
+    display: flex;
+    justify-content: center;
+}
+.type-filter{
+    align-items: center;
+    margin-left: 10%;
+}
+
+.type-filter button {
+    width: 150px;
+  font-size: 14px;
+  transition: all 0.2s ease-in-out;
+  height: 45px;
+  margin-top: 20%;
+ background-color: #E4AFB0;
+ color: white;
+ border-color: black;
+}
+
+.type-filter button.active { 
+  padding: 8px 14px;  
+  transform: scale(1.1); 
+  height: 50px;
+   background-color: #AB1E24;
+}
