@@ -2,6 +2,28 @@ import { Router } from "express";
 import { db } from "../db";
 
 const router = Router();
+console.log("Employee router loaded");
+
+// 🔹 获取所有员工 (GET)
+router.get("/", async (req, res) => {
+  const conn = await db.getConnection();
+  try {
+    const [employees]: any = await conn.query(`
+      SELECT e.*, COALESCE(JSON_ARRAYAGG(p.name), JSON_ARRAY()) AS positions
+      FROM employees e
+      LEFT JOIN employee_position_assignments pa ON e.id = pa.employee_id
+      LEFT JOIN employee_positions p ON pa.position_id = p.id
+      GROUP BY e.id
+    `);
+    res.json(employees);
+  } catch (err) {
+    console.error("❌ 获取员工失败:", err);
+    res.status(500).json({ error: "获取员工失败" });
+  } finally {
+    conn.release();
+  }
+});
+
 
 // 🔹 新增员工 (POST)
 router.post("/", async (req, res) => {

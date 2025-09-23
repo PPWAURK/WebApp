@@ -75,7 +75,7 @@ export default function Employes() {
     setEmployees((prev) => prev.filter((emp) => emp.id !== id));
 
     try {
-      const res = await fetch(`http://localhost:4000/api/employees/${id}`, { method: "DELETE" });
+      const res = await fetch(`https://api.zhaoplatforme.com/api/employees/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Delete failed");
     } catch (error) {
       console.error("❌ Erreur suppression:", error);
@@ -86,7 +86,7 @@ export default function Employes() {
   // Ajout employé
   const handleAdd = async () => {
     try {
-      const res = await fetch("http://localhost:4000/api/employees", {
+      const res = await fetch("https://api.zhaoplatforme.com/api/employees", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
