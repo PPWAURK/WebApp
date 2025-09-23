@@ -10,7 +10,7 @@ interface Employee {
   off_day_1: string | null;
   off_day_2: string | null;
   base_type: "CUISINE" | "SALLE" | "BAR";
-  positions: string[]; // noms des postes associés
+  positions: string[];
 }
 
 interface EmployeePosition {
@@ -75,7 +75,7 @@ export default function Employes() {
     setEmployees((prev) => prev.filter((emp) => emp.id !== id));
 
     try {
-      const res = await fetch(`https://api.zhaoplatforme.com/api/employees/${id}`, { method: "DELETE" });
+      const res = await fetch(`http://localhost:4000/api/employees/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Delete failed");
     } catch (error) {
       console.error("❌ Erreur suppression:", error);
@@ -86,7 +86,7 @@ export default function Employes() {
   // Ajout employé
   const handleAdd = async () => {
     try {
-      const res = await fetch("https://api.zhaoplatforme.com/api/employees", {
+      const res = await fetch("http://localhost:4000/api/employees", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

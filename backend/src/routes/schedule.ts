@@ -14,7 +14,7 @@ async function generateWeekSchedules(startDate: string) {
   const schedules: any[] = [];
 
   const [allEmployees]: any = await db.query(`
-    SELECT e.id, e.name, e.fixed_off_day, e.base_type,
+    SELECT e.id, e.name, e.off_day_1, e.off_day_2, e.base_type,
            GROUP_CONCAT(epa.position_id) AS positions
     FROM employees e
            LEFT JOIN employee_position_assignments epa ON e.id = epa.employee_id
@@ -31,25 +31,33 @@ async function generateWeekSchedules(startDate: string) {
     const shiftDate = format(currentDate, "yyyy-MM-dd");
 
     const [rules]: any = await db.query(
-        `SELECT r.id AS role_id, r.name AS role_name, rr.shift_type, rr.required_count
-         FROM role_shift_requirements rr
-                JOIN roles r ON rr.role_id = r.id
-         WHERE rr.weekday = ?`,
-        [weekday]
+      `SELECT r.id AS role_id, r.name AS role_name, rr.shift_type, rr.required_count
+       FROM role_shift_requirements rr
+              JOIN roles r ON rr.role_id = r.id
+       WHERE rr.weekday = ?`,
+      [weekday]
     );
 
     for (const rule of rules) {
       const [shiftResult]: any = await db.query(
-          `INSERT INTO shifts (role_id, shift_date, start_time, end_time, required_count, shift_type)
-           VALUES (?, ?, ?, ?, ?, ?)`,
-          [
-            rule.role_id,
-            shiftDate,
-            rule.shift_type === "FULLDAY" ? "11:00" : rule.shift_type === "AM" ? "11:00" : "14:30",
-            rule.shift_type === "FULLDAY" ? "23:00" : rule.shift_type === "AM" ? "19:30" : "23:00",
-            rule.required_count,
-            rule.shift_type,
-          ]
+        `INSERT INTO shifts (role_id, shift_date, start_time, end_time, required_count, shift_type)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          rule.role_id,
+          shiftDate,
+          rule.shift_type === "FULLDAY"
+            ? "11:00"
+            : rule.shift_type === "AM"
+            ? "11:00"
+            : "14:30",
+          rule.shift_type === "FULLDAY"
+            ? "23:00"
+            : rule.shift_type === "AM"
+            ? "19:30"
+            : "23:00",
+          rule.required_count,
+          rule.shift_type,
+        ]
       );
 
       const shiftId = shiftResult.insertId;
@@ -65,12 +73,15 @@ async function generateWeekSchedules(startDate: string) {
           tries++;
 
           const positions =
-              candidate.positions && candidate.positions.length > 0
-                  ? candidate.positions.split(",").map((p: string) => parseInt(p))
-                  : [];
+            candidate.positions && candidate.positions.length > 0
+              ? candidate.positions.split(",").map((p: string) => parseInt(p))
+              : [];
 
-          const goodForRole = positions.includes(rule.role_id) || candidate.base_type;
-          const notOffDay = candidate.fixed_off_day !== weekday;
+          const goodForRole =
+            positions.includes(rule.role_id) || candidate.base_type;
+
+          const notOffDay =
+            candidate.off_day_1 !== weekday && candidate.off_day_2 !== weekday;
 
           if (goodForRole && notOffDay) {
             emp = candidate;
@@ -79,10 +90,10 @@ async function generateWeekSchedules(startDate: string) {
         }
 
         if (emp) {
-          await db.query("INSERT INTO schedule (shift_id, employee_id) VALUES (?, ?)", [
-            shiftId,
-            emp.id,
-          ]);
+          await db.query(
+            "INSERT INTO schedule (shift_id, employee_id) VALUES (?, ?)",
+            [shiftId, emp.id]
+          );
 
           assignedEmployees.push({
             id: emp.id,
@@ -157,12 +168,12 @@ scheduleRouter.get("/generate-week-xlsx", async (req, res) => {
 
     // Envoyer le fichier Excel
     res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     );
     res.setHeader(
-        "Content-Disposition",
-        `attachment; filename=planning_${startDateStr}.xlsx`
+      "Content-Disposition",
+      `attachment; filename=planning_${startDateStr}.xlsx`
     );
 
     await workbook.xlsx.write(res);
