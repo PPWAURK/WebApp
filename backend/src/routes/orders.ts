@@ -123,7 +123,7 @@ const drawRowBorders = (y: number) => {
 
 // En-tête tableau
 doc.font("NotoSans").fontSize(12);
-["N°", "Produit | Unit", "Produit (CN)", "Quantité"].forEach((header, i) => {
+["N°", "Produit", "Produit (CN)", "Quantité/Unit"].forEach((header, i) => {
   const xPos = startX + colWidths.slice(0, i).reduce((a, b) => a + b, 0) + 5;
   doc.text(header, xPos, startY + 7, { width: colWidths[i] - 10 });
 });
@@ -139,7 +139,7 @@ orderItems.forEach((item: any, i: number) => {
 
     // Redessiner en-tête sur la nouvelle page
     doc.font("NotoSans").fontSize(12);
-    ["N°", "Produit | Unit", "Produit (CN)", "Quantité"].forEach((header, i) => {
+    ["N°", "Produit", "Produit (CN)", "Quantité/Unit"].forEach((header, i) => {
       const xPos = startX + colWidths.slice(0, i).reduce((a, b) => a + b, 0) + 5;
       doc.text(header, xPos, startY + 7, { width: colWidths[i] - 10 });
     });
@@ -150,9 +150,9 @@ orderItems.forEach((item: any, i: number) => {
   // Ligne
   const row = [
     String(i + 1),
-    `${item.name} ${item.unit || ""}`,
+    `${item.name}`,
     item.name_cn || "",
-    `${item.quantity}`,
+    `${item.quantity} ${item.unit || ""}`,
   ];
   row.forEach((cell, j) => {
     doc.font("NotoSans").fontSize(12).text(
