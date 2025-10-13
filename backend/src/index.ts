@@ -9,6 +9,7 @@ import ruleRouter from "./routes/rules";
 import { scheduleRouter } from "./routes/schedule";
 import employeeTypesRouter from "./routes/employeeTypes";
 import employeePositionsRouter from "./routes/employeePositions";
+import {roleRouter} from "./routes/Role";
 
 
 const app = express();
@@ -35,6 +36,8 @@ app.use("/api/schedule", scheduleRouter);
 app.use("/api/employee-types", employeeTypesRouter);
 
 app.use("/api/employee-positions", employeePositionsRouter);
+
+app.use("/api/roles", roleRouter);
 
 app.listen(4000, "0.0.0.0", () => {
   console.log("🚀 Serveur démarré sur http://0.0.0.0:4000");

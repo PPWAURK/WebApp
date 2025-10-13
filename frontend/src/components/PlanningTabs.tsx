@@ -1,8 +1,25 @@
+import React, { useState, useEffect } from "react";
 import "./PlanningTabs.css";
+import CustomSelect from "./CustomSelect";
+
+function formatShiftTime(timeRange: string) {
+    if (!timeRange) return "";
+    return timeRange.split("-").map((time) => time.slice(0, 5)).join("-");
+}
+
+function getColorFromIdAndName(id: number, name: string): string {
+    const base = id + name.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+    const hue = base % 360;
+    const saturation = 70;
+    const lightness = 55;
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+}
 
 export type Employee = {
     id: number;
     name: string;
+    base_type: string[];
+    positions: string[];
 };
 
 export type ScheduleItem = {
@@ -10,7 +27,8 @@ export type ScheduleItem = {
     weekday: string;
     role_id: number;
     role_name: string;
-    shift_type: string; // AM / PM / FULLDAY
+    area: "Salle" | "Cuisine";
+    shift_time: string;
     employees: Employee[];
 };
 
@@ -18,130 +36,269 @@ type PlanningTabsProps = {
     schedules: ScheduleItem[];
 };
 
-const roleColors: Record<string, string> = {
-    "Accueil": "#FFD700",
-    "Service": "#ADFF2F",
-    "Bar": "#87CEEB",
-    "Pâte": "#FFA07A",
-    "Entrée chaude": "#FF6347",
-    "Entrée froide": "#40E0D0",
-    "Polyvalent": "#DA70D6",
-    "Cuisine": "#FFA500",
-    "Salle": "#98FB98",
-};
-
-const shiftTimeMapByRole: Record<string, Record<string, string>> = {
-    "FULLDAY": {
-        "Cuisine": "11H00-15H30 / 18H00-23H00",
-        "Salle": "10H30-14H30 / 17H30-23H00",
-        "Bar": "11H00-15H30 / 18H00-23H00",
-    },
-    "AM": {
-        "Cuisine": "10H30-19H30",
-        "Salle": "11H00-19H30",
-        "Bar": "11H00-15H30",
-    },
-    "PM": {
-        "Cuisine": "14H30-23H00",
-        "Salle": "15H00-23H00",
-        "Bar": "17H00-23H00",
-    },
-};
+type SelectedCell = { role_name: string; date: string; area: "Salle" | "Cuisine"; shift_time: string };
 
 export default function PlanningTabs({ schedules }: PlanningTabsProps) {
-    if (!schedules || schedules.length === 0) return <p>Aucun planning disponible</p>;
+    const [schedulesState, setSchedulesState] = useState<ScheduleItem[]>([]);
+    const [employees, setEmployees] = useState<Employee[]>([]);
+    const [selectedCell, setSelectedCell] = useState<SelectedCell | null>(null);
+    const [replacements, setReplacements] = useState<Record<string, Employee>>({});
+    const [employeeColors, setEmployeeColors] = useState<Record<number, string>>({});
 
-    // Grouper par rôle + shift
-    const groupedByRole: Record<string, ScheduleItem[]> = {};
-    schedules.forEach((s) => {
-        const key = `${s.role_id}-${s.shift_type}`;
-        if (!groupedByRole[key]) groupedByRole[key] = [];
-        groupedByRole[key].push(s);
-    });
+    useEffect(() => {
+        setSchedulesState(schedules);
+    }, [schedules]);
 
-    const days = Array.from(new Set(schedules.map((s) => s.date))).sort();
+    useEffect(() => {
+        const fetchEmployees = async () => {
+            try {
+                const res = await fetch("https://api.zhaoplatforme.com/api/employees");
+                const data: Employee[] = await res.json();
+                setEmployees(data);
 
-    // Tri : AM → FULLDAY → PM
-    const sortedGroups = Object.entries(groupedByRole).sort(([_, a], [__, b]) => {
-        const shiftOrder: Record<string, number> = { "AM": 0, "FULLDAY": 1, "PM": 2 };
-        return (shiftOrder[a[0].shift_type] ?? 3) - (shiftOrder[b[0].shift_type] ?? 3);
-    });
+                const colors: Record<number, string> = {};
+                data.forEach((emp) => {
+                    colors[emp.id] = getColorFromIdAndName(emp.id, emp.name);
+                });
+                setEmployeeColors(colors);
+            } catch (err) {
+                console.error("Erreur récupération employés :", err);
+            }
+        };
+        fetchEmployees();
+    }, []);
 
-    return (
-        <div className="planning-table">
-            <table>
-                <thead>
-                <tr>
-                    <th>Fonction</th>
-                    <th>Horaires</th>
-                    {days.map((d) => {
-                        const sample = schedules.find((s) => s.date === d);
-                        return (
-                            <th key={d}>
-                                {sample?.weekday} <br />
-                                <span className="date">{d}</span>
-                            </th>
-                        );
-                    })}
-                </tr>
-                </thead>
-                <tbody>
-                {sortedGroups.map(([key, shifts]) => {
-                    const { role_name, shift_type } = shifts[0];
+    const handleSelectChange = (shift: ScheduleItem, empId: string) => {
+        const emp = employees.find((e) => e.id === parseInt(empId));
+        if (!emp) return;
 
-                    // Horaires selon rôle, fallback sur shift_type si rôle absent
-                    const displayShift =
-                        shiftTimeMapByRole[shift_type]?.[role_name] ||
-                        shiftTimeMapByRole[shift_type]?.["Salle"] || // fallback
-                        shift_type;
+        const newSchedules = schedulesState.map((s) =>
+            s.role_id === shift.role_id &&
+            s.weekday === shift.weekday &&
+            s.shift_time === shift.shift_time &&
+            s.area === shift.area
+                ? { ...s, employees: [emp] }
+                : s
+        );
+        setSchedulesState(newSchedules);
+        setSelectedCell(null);
+    };
 
-                    const colspanTracker: Record<number, boolean> = {}; // suivi des cellules fusionnées horizontalement
+    const handleReplacementSelect = (area: "Salle" | "Cuisine", date: string, empId: string) => {
+        const emp = employees.find((e) => e.id === parseInt(empId));
+        if (!emp) return;
+        setReplacements((prev) => ({ ...prev, [`${area}-${date}`]: emp }));
+        setSelectedCell(null);
+    };
 
-                    return (
-                        <tr key={key}>
-                            <td style={{ background: roleColors[role_name] || "#eee" }}>
-                                {role_name}
-                            </td>
-                            <td>{displayShift}</td>
+    if (employees.length === 0) return <div>Chargement des employés...</div>;
 
-                            {days.map((d, dayIndex) => {
-                                if (colspanTracker[dayIndex]) return null;
+    const weekdayOrder: Record<string, number> = {
+        Lundi: 1,
+        Mardi: 2,
+        Mercredi: 3,
+        Jeudi: 4,
+        Vendredi: 5,
+        Samedi: 6,
+        Dimanche: 7,
+    };
 
-                                const shift = shifts.find((s) => s.date === d);
+    const days = Array.from(new Set(schedulesState.map((s) => s.weekday || s.date))).sort(
+        (a, b) => (weekdayOrder[a] || 0) - (weekdayOrder[b] || 0)
+    );
 
-                                if (!shift || shift.employees.length === 0) {
-                                    // calcul du colspan pour les jours vides consécutifs
-                                    let colspan = 1;
-                                    for (let i = dayIndex + 1; i < days.length; i++) {
-                                        const nextShift = shifts.find((s) => s.date === days[i]);
-                                        if (!nextShift || nextShift.employees.length === 0) {
-                                            colspan++;
-                                            colspanTracker[i] = true;
-                                        } else break;
-                                    }
+    const weekdays = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
+    const weekends = ["Samedi", "Dimanche"];
+    const weekDaysDates = days.filter((d) => weekdays.includes(d));
+    const weekendDates = days.filter((d) => weekends.includes(d));
+    const areas: ("Salle" | "Cuisine")[] = ["Salle", "Cuisine"];
 
-                                    return (
-                                        <td key={d} colSpan={colspan} className="empty">
-                                            -
-                                        </td>
-                                    );
-                                }
+    const renderTable = (dates: string[], schedulesToUse: ScheduleItem[]) => (
+        <table>
+            <thead>
+            <tr>
+                <th>Horaires</th>
+                <th>Fonction</th>
+                {dates.map((d) => (
+                    <th key={d}>{d}</th>
+                ))}
+            </tr>
+            </thead>
+            <tbody>
+            {areas.map((area) => {
+                const grouped = schedulesToUse
+                    .filter((s) => s.area === area && dates.includes(s.weekday || s.date))
+                    .reduce<Record<string, ScheduleItem[]>>((acc, s) => {
+                        const key = s.role_name;
+                        if (!acc[key]) acc[key] = [];
+                        acc[key].push(s);
+                        return acc;
+                    }, {});
+
+                return (
+                    <React.Fragment key={area}>
+                        <tr>
+                            <td colSpan={dates.length + 2}>{area}</td>
+                        </tr>
+
+                        {Object.entries(grouped).map(([role_name, items]) => {
+                            const allShiftTimes = Array.from(
+                                new Set(items.map((s) => formatShiftTime(s.shift_time)))
+                            ).join(" / ");
+
+                            return (
+                                <tr key={role_name}>
+                                    <td style={{ textAlign: "center" }}>{allShiftTimes}</td>
+                                    <td style={{ fontWeight: "bold" }}>{role_name}</td>
+
+                                    {dates.map((d) => {
+                                        const shift = items.find((s) => s.weekday === d || s.date === d);
+                                        if (!shift) return <td key={d} className="empty">-</td>;
+
+                                        const isOpen =
+                                            selectedCell?.role_name === role_name &&
+                                            selectedCell?.date === d &&
+                                            selectedCell?.area === area &&
+                                            selectedCell?.shift_time === shift.shift_time;
+
+                                        return (
+                                            <td
+                                                key={d}
+                                                className="shift-cell"
+                                                style={{ cursor: "pointer" }}
+                                                onClick={() =>
+                                                    setSelectedCell(
+                                                        isOpen
+                                                            ? null
+                                                            : {
+                                                                role_name,
+                                                                date: d,
+                                                                area,
+                                                                shift_time: shift.shift_time,
+                                                            }
+                                                    )
+                                                }
+                                            >
+                                                {shift.employees.length > 0
+                                                    ? shift.employees.map((e) => (
+                                                        <div
+                                                            key={e.id}
+                                                            className="employee-cell"
+                                                            style={{
+                                                                backgroundColor: employeeColors[e.id] || "#999",
+                                                                color: "white",
+                                                                textAlign: "center",
+                                                                margin: "2px",
+                                                                padding: "4px 6px",
+                                                                borderRadius: "6px",
+                                                                fontWeight: "600",
+                                                            }}
+                                                        >
+                                                            {e.name}
+                                                        </div>
+                                                    ))
+                                                    : "-"}
+
+                                                {isOpen && (
+                                                    <CustomSelect
+                                                        options={employees
+                                                            .filter(
+                                                                (emp) =>
+                                                                    emp.base_type.includes(area.toUpperCase()) ||
+                                                                    emp.positions.includes(area) ||
+                                                                    (area === "Salle" && emp.positions.includes("Bar"))
+                                                            )
+                                                            .map((emp) => emp.name)}
+                                                        value={shift.employees[0]?.name || ""}
+                                                        onChange={(val) => {
+                                                            const emp = employees.find((e) => e.name === val);
+                                                            if (emp) handleSelectChange(shift, String(emp.id));
+                                                        }}
+                                                    />
+                                                )}
+
+                                            </td>
+                                        );
+                                    })}
+                                </tr>
+                            );
+                        })}
+
+                        <tr key="remplacant">
+                            <td style={{ textAlign: "center" }}>-</td>
+                            <td style={{ fontWeight: "bold" }}>Remplaçant</td>
+                            {dates.map((d) => {
+                                const isOpen =
+                                    selectedCell?.role_name === "Remplaçant" &&
+                                    selectedCell?.date === d &&
+                                    selectedCell?.area === area;
+
+                                const emp = replacements[`${area}-${d}`];
 
                                 return (
-                                    <td key={d}>
-                                        {shift.employees.map((e) => (
-                                            <div key={e.id} className="employee-cell">
-                                                {e.name}
+                                    <td
+                                        key={d}
+                                        className="shift-cell"
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() =>
+                                            setSelectedCell(
+                                                isOpen ? null : { role_name: "Remplaçant", date: d, area, shift_time: "" }
+                                            )
+                                        }
+                                    >
+                                        {emp ? (
+                                            <div
+                                                key={emp.id}
+                                                className="employee-cell"
+                                                style={{
+                                                    backgroundColor: employeeColors[emp.id] || "#999",
+                                                    color: "white",
+                                                    textAlign: "center",
+                                                    margin: "2px",
+                                                    padding: "4px 6px",
+                                                    borderRadius: "6px",
+                                                    fontWeight: "600",
+                                                }}
+                                            >
+                                                {emp.name}
                                             </div>
-                                        ))}
+                                        ) : (
+                                            "-"
+                                        )}
+
+                                        {isOpen && (
+                                            <CustomSelect
+                                                options={employees
+                                                    .filter(
+                                                        (emp) =>
+                                                            emp.base_type.includes(area.toUpperCase()) ||
+                                                            emp.positions.includes(area) ||
+                                                            (area === "Salle" && emp.positions.includes("Bar"))
+                                                    )
+                                                    .map((emp) => emp.name)}
+                                                value={replacements[`${area}-${d}`]?.name || ""}
+                                                onChange={(val) => {
+                                                    const emp = employees.find((e) => e.name === val);
+                                                    if (emp) handleReplacementSelect(area, d, String(emp.id));
+                                                }}
+                                            />
+                                        )}
+
                                     </td>
                                 );
                             })}
                         </tr>
-                    );
-                })}
-                </tbody>
-            </table>
+                    </React.Fragment>
+                );
+            })}
+            </tbody>
+        </table>
+    );
+
+    return (
+        <div className="planning-table">
+            {weekDaysDates.length > 0 && renderTable(weekDaysDates, schedulesState)}
+            {weekendDates.length > 0 && renderTable(weekendDates, schedulesState)}
         </div>
     );
 }

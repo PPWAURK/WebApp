@@ -3,3 +3,8 @@ body {
   font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
   background-color: white;
 }
+html, body {
+  height: auto !important;
+  min-height: 100vh !important;
+  overflow-y: visible !important;
+}

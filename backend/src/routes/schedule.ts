@@ -2,19 +2,17 @@
 import { Router } from "express";
 import { db } from "../db";
 import { addDays, format } from "date-fns";
-import ExcelJS from "exceljs";
-
 export const scheduleRouter = Router();
 
-let employeeIndex = 0; // round-robin
+let employeeIndex = 0;
 
-// Fonction réutilisable pour générer les schedules
 async function generateWeekSchedules(startDate: string) {
   const start = new Date(startDate);
   const schedules: any[] = [];
 
+  // Récupération de tous les employés et leurs positions
   const [allEmployees]: any = await db.query(`
-    SELECT e.id, e.name, e.off_day_1, e.off_day_2, e.base_type,
+    SELECT e.id, e.name, e.off_day_1, e.off_day_2, e.base_type, e.is_part_time,
            GROUP_CONCAT(epa.position_id) AS positions
     FROM employees e
            LEFT JOIN employee_position_assignments epa ON e.id = epa.employee_id
@@ -23,82 +21,93 @@ async function generateWeekSchedules(startDate: string) {
 
   if (allEmployees.length === 0) return schedules;
 
+  const weekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+
+  // Mapping role_id → position_id
+  const roleToPositionMap: Record<number, number> = {
+    1: 5, // Accueil
+    2: 6, // Service
+    3: 7, // Bar
+    4: 3, // Pâte
+    5: 1, // Entrée chaude (Chaud)
+    6: 2, // Entrée froide (Froid)
+    7: 4, // Polyvalent
+  };
+
   for (let i = 0; i < 7; i++) {
     const currentDate = addDays(start, i);
-    const dayIndex = currentDate.getDay();
-    const weekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-    const weekday = weekdays[dayIndex];
+    const weekday = weekdays[currentDate.getDay()];
     const shiftDate = format(currentDate, "yyyy-MM-dd");
 
+    console.log(`📅 Génération des shifts pour le ${shiftDate} (${weekday})`);
+
+    const assignedToday = new Set<number>();
+
     const [rules]: any = await db.query(
-      `SELECT r.id AS role_id, r.name AS role_name, rr.shift_type, rr.required_count
-       FROM role_shift_requirements rr
-              JOIN roles r ON rr.role_id = r.id
-       WHERE rr.weekday = ?`,
-      [weekday]
+        `SELECT r.id AS role_id, r.name AS role_name, rr.shift_type, rr.required_count
+         FROM role_shift_requirements rr
+                JOIN roles r ON rr.role_id = r.id
+         WHERE rr.weekday = ?`,
+        [weekday]
     );
 
     for (const rule of rules) {
-      const [shiftResult]: any = await db.query(
-        `INSERT INTO shifts (role_id, shift_date, start_time, end_time, required_count, shift_type)
-         VALUES (?, ?, ?, ?, ?, ?)`,
-        [
-          rule.role_id,
-          shiftDate,
-          rule.shift_type === "FULLDAY"
-            ? "11:00"
-            : rule.shift_type === "AM"
-            ? "11:00"
-            : "14:30",
-          rule.shift_type === "FULLDAY"
-            ? "23:00"
-            : rule.shift_type === "AM"
-            ? "19:30"
-            : "23:00",
-          rule.required_count,
-          rule.shift_type,
-        ]
-      );
+      console.log(` 📝 Création shift pour rôle ${rule.role_name} (${rule.shift_type})`);
 
+      const [shiftResult]: any = await db.query(
+          `INSERT INTO shifts (role_id, shift_date, start_time, end_time, required_count, shift_type)
+           VALUES (?, ?, ?, ?, ?, ?)`,
+          [
+            rule.role_id,
+            shiftDate,
+            rule.shift_type === "FULLDAY" ? "11:00" : rule.shift_type === "AM" ? "11:00" : "14:30",
+            rule.shift_type === "FULLDAY" ? "23:00" : rule.shift_type === "AM" ? "19:30" : "23:00",
+            rule.required_count,
+            rule.shift_type,
+          ]
+      );
       const shiftId = shiftResult.insertId;
       const assignedEmployees: any[] = [];
 
       for (let j = 0; j < rule.required_count; j++) {
-        let tries = 0;
         let emp: any = null;
 
-        while (tries < allEmployees.length) {
-          const candidate = allEmployees[employeeIndex % allEmployees.length];
+        // Étape 1 : employés du type correct
+        const candidatesSameType = allEmployees.filter((e: any) => {
+          const positions = e.positions ? e.positions.split(",").map((p: string) => parseInt(p)) : [];
+          const goodForRole = positions.includes(roleToPositionMap[rule.role_id]);
+          const notOffDay = e.off_day_1 !== weekday && e.off_day_2 !== weekday;
+          const notAlreadyAssigned = !assignedToday.has(e.id);
+          const partTimeOk = !e.is_part_time || ["FRI", "SAT", "SUN"].includes(weekday);
+          return e.base_type === rule.role_name.toUpperCase() && goodForRole && notOffDay && notAlreadyAssigned && partTimeOk;
+        });
+
+        if (candidatesSameType.length > 0) {
+          emp = candidatesSameType[employeeIndex % candidatesSameType.length];
           employeeIndex++;
-          tries++;
+        } else {
+          // Étape 2 : fallback sur autre type
+          const candidatesOtherType = allEmployees.filter((e: any) => {
+            const positions = e.positions ? e.positions.split(",").map((p: string) => parseInt(p)) : [];
+            const goodForRole = positions.includes(roleToPositionMap[rule.role_id]);
+            const notOffDay = e.off_day_1 !== weekday && e.off_day_2 !== weekday;
+            const notAlreadyAssigned = !assignedToday.has(e.id);
+            const partTimeOk = !e.is_part_time || ["FRI", "SAT", "SUN"].includes(weekday);
+            return e.base_type !== rule.role_name.toUpperCase() && goodForRole && notOffDay && notAlreadyAssigned && partTimeOk;
+          });
 
-          const positions =
-            candidate.positions && candidate.positions.length > 0
-              ? candidate.positions.split(",").map((p: string) => parseInt(p))
-              : [];
-
-          const goodForRole =
-            positions.includes(rule.role_id) || candidate.base_type;
-
-          const notOffDay =
-            candidate.off_day_1 !== weekday && candidate.off_day_2 !== weekday;
-
-          if (goodForRole && notOffDay) {
-            emp = candidate;
-            break;
+          if (candidatesOtherType.length > 0) {
+            emp = candidatesOtherType[employeeIndex % candidatesOtherType.length];
+            employeeIndex++;
           }
         }
 
         if (emp) {
-          await db.query(
-            "INSERT INTO schedule (shift_id, employee_id) VALUES (?, ?)",
-            [shiftId, emp.id]
-          );
-
-          assignedEmployees.push({
-            id: emp.id,
-            name: emp.name,
-          });
+          await db.query("INSERT INTO schedule (shift_id, employee_id) VALUES (?, ?)", [shiftId, emp.id]);
+          assignedEmployees.push({ id: emp.id, name: emp.name });
+          assignedToday.add(emp.id);
+        } else {
+          console.warn(`⚠️ Aucun employé disponible pour ${rule.role_name} le ${shiftDate}`);
         }
       }
 
@@ -110,6 +119,8 @@ async function generateWeekSchedules(startDate: string) {
         shift_type: rule.shift_type,
         employees: assignedEmployees,
       });
+
+      console.log(` 👥 Employés assignés pour ${rule.role_name}:`, assignedEmployees.map((e: any) => e.name));
     }
   }
 
@@ -128,58 +139,17 @@ scheduleRouter.post("/generate-week", async (req, res) => {
   }
 });
 
-// Route Excel stylé avec copie de mise en forme
-scheduleRouter.get("/generate-week-xlsx", async (req, res) => {
+scheduleRouter.get("/", async (req, res) => {
   try {
-    const startDateStr = req.query.startDate as string;
-    if (!startDateStr) return res.status(400).send("startDate manquant");
-
-    const schedules = await generateWeekSchedules(startDateStr);
-
-    const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.readFile("./data/Planning.xlsx");
-
-    const sheet = workbook.getWorksheet("Planning");
-    if (!sheet) return res.status(500).send("La feuille 'Planning' n'existe pas dans le template");
-
-    // Ligne modèle pour copier la mise en forme
-    const templateRow = sheet.getRow(2); // ligne 2 comme modèle
-    let rowIndex = 3; // commencer après la ligne modèle
-
-    schedules.forEach((shift: any) => {
-      const row = sheet.getRow(rowIndex);
-
-      // Copier le style cellule par cellule
-      templateRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
-        const targetCell = row.getCell(colNumber);
-        targetCell.style = { ...cell.style };
-      });
-
-      // Remplir les valeurs
-      row.getCell(1).value = shift.date;
-      row.getCell(2).value = shift.weekday;
-      row.getCell(3).value = shift.role_name;
-      row.getCell(4).value = shift.shift_type;
-      row.getCell(5).value = shift.employees.map((e: any) => e.name).join(", ");
-
-      row.commit();
-      rowIndex++;
-    });
-
-    // Envoyer le fichier Excel
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    );
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename=planning_${startDateStr}.xlsx`
-    );
-
-    await workbook.xlsx.write(res);
-    res.end();
+    const [rows]: any = await db.query(`
+      SELECT s.*, r.name AS role_name
+      FROM schedule sc
+      JOIN shifts s ON sc.shift_id = s.id
+      JOIN roles r ON s.role_id = r.id
+    `);
+    res.json(rows);
   } catch (err) {
-    console.error("❌ Erreur generate-week-xlsx:", err);
-    res.status(500).send("Erreur génération Excel");
+    console.error("❌ Erreur GET /schedule:", err);
+    res.status(500).json({ success: false });
   }
 });

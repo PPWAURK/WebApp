@@ -1,3 +1,15 @@
+html, body {
+  margin: 0;       /* supprime les marges par défaut */
+  padding: 0;
+  height: 100%;    /* important pour que body prenne toute la hauteur de html */
+}
+
+.full-page {
+  height: 100vh;   /* 100% de la hauteur de la fenêtre */
+  background-color: lightblue;
+}
+
+
 .employes-page {
   background: white;
   padding: 20px;
@@ -79,9 +91,22 @@
   color: red;
 }
 
-select {
+select{
+  margin-top: 2%;
   width: 100%;
   padding: 5px;
+  font-size: 18px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background-color: white;
+  color: black;
+}
+
+.employe-name-input{
+  width: 30%;
+  font-size: 18px;
+  text-align: center;
+  padding: 10px;
   border-radius: 5px;
   border: 1px solid #ccc;
   background-color: white;

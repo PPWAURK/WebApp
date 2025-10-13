@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import CommandInterface from "./pages/CommandInterface";
 import Statistiques from "./pages/Statistiques";
 import Employees from "./pages/Employes"
-import Planning from "./pages/Planning"
+import {Planning} from "./pages/Planning"
 import "./style.css";
 
 function App() {

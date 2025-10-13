@@ -1,250 +1,159 @@
-// src/pages/Planning.tsx
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import axios from "axios";
 import "./Planning.css";
 import Header from "../components/Header";
-import PlanningTable from "../components/PlanningTabs";
+import PlanningTabs, { ScheduleItem } from "../components/PlanningTabs";
+import OffDaysTable from "../components/OffDaysTable";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 
-interface Rule {
-  id: number;
-  role_id: number;
-  weekday: string;
-  shift_type: string;
-  required_count: number;
-}
-
-interface Employee {
+interface Role {
   id: number;
   name: string;
+  area: "Salle" | "Cuisine";
+  weekday_start1: string;
+  weekday_end1: string;
+  weekday_start2?: string;
+  weekday_end2?: string;
+  weekend_start1?: string;
+  weekend_end1?: string;
+  weekend_start2?: string;
+  weekend_end2?: string;
+  weekend_start3?: string;
+  weekend_end3?: string;
 }
 
-interface ScheduleItem {
-  date: string;
-  weekday: string;
-  role_id: number;
-  role_name: string;
-  shift_type: string;
-  employees: Employee[];
-  incomplete?: boolean;
-}
-
-export default function Planning() {
-  const [rules, setRules] = useState<Rule[]>([]);
+export function Planning() {
   const [schedules, setSchedules] = useState<ScheduleItem[]>([]);
-  const [startDate, setStartDate] = useState<string>("");
-  const [activeDay, setActiveDay] = useState<string>("MON");
-
-  // 👉 états pour ajouter une règle
-  const [newRoleId, setNewRoleId] = useState<number>(1);
-  const [newWeekday, setNewWeekday] = useState<string>("MON");
-  const [newShiftType, setNewShiftType] = useState<string>("FULLDAY");
-  const [newRequiredCount, setNewRequiredCount] = useState<number>(1);
-
-  // Rôles disponibles (devrait être fetch depuis /roles en vrai)
-const roles = [
-  { id: 1, name: "Accueil", base_type: "SALLE" },
-  { id: 2, name: "Service", base_type: "SALLE" },
-  { id: 3, name: "Bar", base_type: "BAR" },
-  { id: 4, name: "Pâte", base_type: "CUISINE" },
-  { id: 5, name: "Entrée chaude", base_type: "CUISINE" },
-  { id: 6, name: "Entrée froide", base_type: "CUISINE" },
-  { id: 7, name: "Polyvalent", base_type: "CUISINE" },
-];
-
-  const weekdays = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
-  const shifts = ["FULLDAY", "AM", "PM"];
+  const planningRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch("https://api.zhaoplatforme.com/api/rules")
-      .then((res) => res.json())
-      .then(setRules)
-      .catch((err) => console.error("Erreur fetch rules:", err));
+    const fetchRoles = async () => {
+      try {
+        const res = await axios.get<Role[]>("https://api.zhaoplatforme.com/api/roles"); // Ton API
+        const weekdays = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
+        const weekends = ["Samedi", "Dimanche"];
+
+        const items: ScheduleItem[] = [];
+
+        res.data.forEach((role) => {
+          // Semaine
+          weekdays.forEach((day) => {
+            if (role.weekday_start1 && role.weekday_end1) {
+              items.push({
+                date: "",
+                weekday: day,
+                role_id: role.id,
+                role_name: role.name,
+                area: role.area,
+                shift_time: `${role.weekday_start1}-${role.weekday_end1}`,
+                employees: [],
+              });
+            }
+            if (role.weekday_start2 && role.weekday_end2) {
+              items.push({
+                date: "",
+                weekday: day,
+                role_id: role.id,
+                role_name: role.name,
+                area: role.area,
+                shift_time: `${role.weekday_start2}-${role.weekday_end2}`,
+                employees: [],
+              });
+            }
+          });
+
+          // Week-end
+          weekends.forEach((day) => {
+            if (role.weekend_start1 && role.weekend_end1) {
+              items.push({
+                date: "",
+                weekday: day,
+                role_id: role.id,
+                role_name: role.name,
+                area: role.area,
+                shift_time: `${role.weekend_start1}-${role.weekend_end1}`,
+                employees: [],
+              });
+            }
+            if (role.weekend_start2 && role.weekend_end2) {
+              items.push({
+                date: "",
+                weekday: day,
+                role_id: role.id,
+                role_name: role.name,
+                area: role.area,
+                shift_time: `${role.weekend_start2}-${role.weekend_end2}`,
+                employees: [],
+              });
+            }
+            if (role.weekend_start3 && role.weekend_end3) {
+              items.push({
+                date: "",
+                weekday: day,
+                role_id: role.id,
+                role_name: role.name,
+                area: role.area,
+                shift_time: `${role.weekend_start3}-${role.weekend_end3}`,
+                employees: [],
+              });
+            }
+          });
+        });
+
+        setSchedules(items);
+      } catch (error) {
+        console.error("Erreur lors de la récupération des rôles :", error);
+      }
+    };
+
+    fetchRoles();
   }, []);
 
-  // Ajouter une règle
-  const handleAddRule = async () => {
-    const role = roles.find(r => r.id === newRoleId);
+  const handleDownloadPDF = async () => {
+    if (!planningRef.current) return;
 
-    const body = {
-      role_id: newRoleId,
-      role_name: role?.name,
-      base_type: role?.base_type,
-      weekday: newWeekday,
-      shift_type: newShiftType,
-      required_count: newRequiredCount,
-    };
-    const res = await fetch("https://api.zhaoplatforme.com/api/rules", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+    // Afficher le toast
+    toast.info("义总辛苦了🫡，马上给你生成PDF...", {
+      position: "top-right",
+      autoClose: 3500,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
     });
-    const data = await res.json();
-    if (!res.ok) return alert(data.error);
-    setRules([...rules, data]);
+
+    // Attendre la fin du toast avant de générer
+    setTimeout(async () => {
+      const planningElement = planningRef.current!;
+      const canvas = await html2canvas(planningElement, { scale: 2, useCORS: true });
+      const imgData = canvas.toDataURL("image/png");
+
+      const margin = 50;
+      const pdf = new jsPDF({
+        orientation: canvas.width > canvas.height ? "landscape" : "portrait",
+        unit: "px",
+        format: [canvas.width + margin * 2, canvas.height + margin * 2],
+      });
+      pdf.addImage(imgData, "PNG", margin, margin, canvas.width, canvas.height);
+      pdf.save("planning.pdf");
+    }, 3500); // délai pour que le toast soit visible
   };
 
-  // Modifier une règle
-  const handleUpdateRule = async (id: number, field: keyof Rule, value: any) => {
-    const updated = rules.map((r) => (r.id === id ? { ...r, [field]: value } : r));
-    setRules(updated);
-
-    const rule = updated.find((r) => r.id === id);
-    if (!rule) return;
-
-    const res = await fetch(`https://api.zhaoplatforme.com/api/rules/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(rule),
-    });
-    const data = await res.json();
-    if (!res.ok) alert(data.error);
-  };
-
-  // Supprimer une règle
-  const handleDeleteRule = async (id: number) => {
-    await fetch(`https://api.zhaoplatforme.com/api/rules/${id}`, { method: "DELETE" });
-    setRules(rules.filter((r) => r.id !== id));
-  };
-
-  // Générer planning
-  const handleGenerate = async () => {
-    if (!startDate) return alert("Choisir une date de début");
-    const res = await fetch("https://api.zhaoplatforme.com/api/schedule/generate-week", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ startDate }),
-    });
-    const data = await res.json();
-    if (!res.ok) return alert(data.error);
-    setSchedules(data.schedules || []);
-  };
 
   return (
       <div className="planning-page">
-        <Header/>
-        <h2>📋 Ajouter une règle</h2>
-        <div className="add-rule-form">
-          <select value={newRoleId} onChange={(e) => setNewRoleId(Number(e.target.value))}>
-            {roles.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.name}
-                </option>
-            ))}
-          </select>
+        <ToastContainer />
+        <Header />
+        <button className="boutton" onClick={handleDownloadPDF}>Télécharger le planning en PDF</button>
 
-          <select value={newWeekday} onChange={(e) => setNewWeekday(e.target.value)}>
-            {weekdays.map((w) => (
-                <option key={w} value={w}>
-                  {w}
-                </option>
-            ))}
-          </select>
-
-          <select value={newShiftType} onChange={(e) => setNewShiftType(e.target.value)}>
-            {shifts.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-            ))}
-          </select>
-
-          <input
-              type="number"
-              value={newRequiredCount}
-              min={1}
-              onChange={(e) => setNewRequiredCount(Number(e.target.value))}
-          />
-
-          <button onClick={handleAddRule}>➕ Ajouter</button>
-        </div>
-        <h2>📅 Règles existantes</h2>
-
-        {/* Onglets jours de la semaine */}
-        <div className="tabs">
-          {weekdays.map((w) => (
-              <button
-                  key={w}
-                  className={activeDay === w ? "tab active" : "tab"}
-                  onClick={() => setActiveDay(w)}
-              >
-                {w}
-              </button>
-          ))}
-        </div>
-
-        {/* Règles filtrées */}
-        <div className="rules-grid">
-          {rules
-              .filter((rule) => rule.weekday === activeDay)
-              .map((rule) => (
-                  <div key={rule.id} className="rule-card">
-                    <select
-                        value={rule.role_id}
-                        onChange={(e) =>
-                            handleUpdateRule(rule.id, "role_id", Number(e.target.value))
-                        }
-                    >
-                      {roles.map((r) => (
-                          <option key={r.id} value={r.id}>
-                            {r.name}
-                          </option>
-                      ))}
-                    </select>
-
-                    <select
-                        value={rule.weekday}
-                        onChange={(e) => handleUpdateRule(rule.id, "weekday", e.target.value)}
-                    >
-                      {weekdays.map((w) => (
-                          <option key={w} value={w}>
-                            {w}
-                          </option>
-                      ))}
-                    </select>
-
-                    <select
-                        value={rule.shift_type}
-                        onChange={(e) =>
-                            handleUpdateRule(rule.id, "shift_type", e.target.value)
-                        }
-                    >
-                      {shifts.map((s) => (
-                          <option key={s} value={s}>
-                            {s}
-                          </option>
-                      ))}
-                    </select>
-
-                    <input
-                        type="number"
-                        value={rule.required_count}
-                        min={1}
-                        onChange={(e) =>
-                            handleUpdateRule(rule.id, "required_count", Number(e.target.value))
-                        }
-                    />
-
-                    <button onClick={() => handleDeleteRule(rule.id)}>🗑️</button>
-                  </div>
-              ))}
-        </div>
-
-
-        <h2>📅 Générer Planning</h2>
-        <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-        />
-        <button onClick={handleGenerate}>Générer la semaine</button>
-
-        <div className="planning-result">
-          <h3>Résultat</h3>
-          {schedules.length === 0 ? (
-              <p>Aucun planning généré</p>
-          ) : (
-              <PlanningTable schedules={schedules}/>
-          )}
+        <div className="planning-result" ref={planningRef}>
+          <PlanningTabs schedules={schedules} />
+          <OffDaysTable />
         </div>
 
       </div>

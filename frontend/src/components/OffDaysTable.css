@@ -1,0 +1,46 @@
+.offdays{
+    position: relative;
+    overflow: visible !important;
+    z-index: 1;
+}
+.offdays-section h3 {
+    margin-bottom: 10px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.5em;
+}
+
+.offdays-section table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.offdays-section th,
+.offdays-section td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.offdays-section th {
+    background-color: #f4f4f4;
+    font-weight: 600;
+}
+
+.offdays-section select {
+    width: 100%;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 0.95rem;
+    background-color: white;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.offdays-section select:focus {
+    border-color: #007bff;
+    outline: none;
+}

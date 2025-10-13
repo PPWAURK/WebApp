@@ -147,4 +147,23 @@ router.put("/:id", async (req, res) => {
   }
 });
 
+// 🔹 Supprimer un employé (DELETE)
+router.delete("/:id", async (req, res) => {
+  const { id } = req.params;
+  const conn = await db.getConnection();
+  try {
+    const [result]: any = await conn.query("DELETE FROM employees WHERE id = ?", [id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Employé non trouvé" });
+    }
+    res.sendStatus(200);
+  } catch (err) {
+    console.error("❌ 删除员工失败:", err);
+    res.status(500).json({ error: "删除员工失败" });
+  } finally {
+    conn.release();
+  }
+});
+
+
 export default router;
