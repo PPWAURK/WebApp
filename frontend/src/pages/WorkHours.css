@@ -1,0 +1,305 @@
+/* WorkHours.css */
+.workhours-root {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.workhours-root h2 {
+    text-align: center;
+    color: #AB1E24;
+    font-size: 2.2rem;
+    margin-bottom: 30px;
+    font-weight: 700;
+}
+
+.workhours-root h3 {
+    color: #AB1E24;
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+/* Form Styles */
+.workhours-form {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(171, 30, 36, 0.1);
+    margin-bottom: 30px;
+    border: 1px solid #E4AFB0;
+}
+
+.workhours-form label {
+    display: block;
+    margin-bottom: 20px;
+    color: #333;
+    font-weight: 500;
+}
+
+.workhours-form input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #E4AFB0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    margin-top: 5px;
+}
+
+.workhours-form input:focus {
+    outline: none;
+    border-color: #AB1E24;
+    box-shadow: 0 0 0 3px rgba(171, 30, 36, 0.1);
+}
+
+.workhours-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.workhours-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.workhours-actions button {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.workhours-actions button:first-child {
+    background: #AB1E24;
+    color: white;
+}
+
+.workhours-actions button:first-child:hover {
+    background: #8a181d;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(171, 30, 36, 0.3);
+}
+
+.workhours-actions button:last-child {
+    background: #f8f9fa;
+    color: #666;
+    border: 2px solid #E4AFB0;
+}
+
+.workhours-actions button:last-child:hover {
+    background: #E4AFB0;
+    color: #333;
+    transform: translateY(-2px);
+}
+
+/* Controls Section */
+.workhours-controls {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(171, 30, 36, 0.1);
+    margin-bottom: 30px;
+    border: 1px solid #E4AFB0;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    align-items: end;
+}
+
+.workhours-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.workhours-stats div {
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid #AB1E24;
+}
+
+.workhours-stats strong {
+    color: #AB1E24;
+    font-size: 1.1rem;
+}
+
+.workhours-exports {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.workhours-exports button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.workhours-exports button:first-child {
+    background: #28a745;
+    color: white;
+}
+
+.workhours-exports button:first-child:hover {
+    background: #218838;
+    transform: translateY(-2px);
+}
+
+.workhours-exports button:last-child {
+    background: #dc3545;
+    color: white;
+}
+
+.workhours-exports button:last-child:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+}
+
+/* Chart Section */
+.workhours-chart {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(171, 30, 36, 0.1);
+    margin-bottom: 30px;
+    border: 1px solid #E4AFB0;
+}
+
+/* List Section */
+.workhours-list {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(171, 30, 36, 0.1);
+    border: 1px solid #E4AFB0;
+}
+
+.workhours-list table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.workhours-list th {
+    background: #AB1E24;
+    color: white;
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.workhours-list td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #E4AFB0;
+}
+
+.workhours-list tr:hover {
+    background: #f8f9fa;
+}
+
+.workhours-list .actions {
+    display: flex;
+    gap: 8px;
+}
+
+.workhours-list .actions button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.workhours-list .actions button:first-child {
+    background: #007bff;
+    color: white;
+}
+
+.workhours-list .actions button:first-child:hover {
+    background: #0056b3;
+    transform: translateY(-1px);
+}
+
+.workhours-list .actions button:last-child {
+    background: #dc3545;
+    color: white;
+}
+
+.workhours-list .actions button:last-child:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .workhours-root {
+        padding: 15px;
+    }
+
+    .workhours-controls {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .workhours-row {
+        grid-template-columns: 1fr;
+    }
+
+    .workhours-actions {
+        flex-direction: column;
+    }
+
+    .workhours-list table {
+        display: block;
+        overflow-x: auto;
+    }
+
+    .workhours-list .actions {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .workhours-root h2 {
+        font-size: 1.8rem;
+    }
+
+    .workhours-form,
+    .workhours-controls,
+    .workhours-chart,
+    .workhours-list {
+        padding: 20px;
+    }
+}
+
+/* 修复图表容器尺寸 */
+.workhours-chart-container {
+    width: 100%;
+    height: 300px;
+    min-height: 300px;
+    position: relative;
+}
+
+/* 确保图表有明确的尺寸 */
+.recharts-wrapper {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.recharts-surface {
+    width: 100% !important;
+    height: 100% !important;
+}

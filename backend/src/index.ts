@@ -4,13 +4,13 @@ import productRoutes from "./routes/products";
 import orderRoutes from "./routes/orders";
 import statsRoutes from "./routes/stats";
 import restaurantRoutes from "./routes/restaurants";
-import  employeeRouter  from "./routes/employees";
+import employeeRouter from "./routes/employees";
 import ruleRouter from "./routes/rules";
 import { scheduleRouter } from "./routes/schedule";
 import employeeTypesRouter from "./routes/employeeTypes";
 import employeePositionsRouter from "./routes/employeePositions";
-import {roleRouter} from "./routes/Role";
-
+import { roleRouter } from "./routes/Role";
+import employeeWorkHoursRouter from "./routes/employeeWorkHours"; // Ajout de la nouvelle route
 
 const app = express();
 
@@ -39,9 +39,8 @@ app.use("/api/employee-positions", employeePositionsRouter);
 
 app.use("/api/roles", roleRouter);
 
+app.use("/api/work-hours", employeeWorkHoursRouter);
+
 app.listen(4000, "0.0.0.0", () => {
-  console.log("🚀 Serveur démarré sur http://0.0.0.0:4000");
+    console.log("🚀 Serveur démarré sur http://0.0.0.0:4000");
 });
-
-
-

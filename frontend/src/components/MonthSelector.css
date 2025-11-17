@@ -1,0 +1,156 @@
+/* WorkHours.css - 月份选择器部分 */
+.workhours-controls {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(171, 30, 36, 0.1);
+    margin-bottom: 30px;
+    border: 1px solid #E4AFB0;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    align-items: end;
+}
+
+/* 自定义月份选择器 */
+.month-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.month-selector label {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.month-selector-custom {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.month-selector-display {
+    padding: 12px 15px;
+    border: 2px solid #E4AFB0;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    color: #333;
+}
+
+.month-selector-display:hover {
+    border-color: #AB1E24;
+}
+
+.month-selector-display.open {
+    border-color: #AB1E24;
+    box-shadow: 0 0 0 3px rgba(171, 30, 36, 0.1);
+}
+
+.month-selector-arrow {
+    transition: transform 0.3s ease;
+    color: #AB1E24;
+}
+
+.month-selector-arrow.open {
+    transform: rotate(180deg);
+}
+
+.month-selector-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid #E4AFB0;
+    border-radius: 8px;
+    margin-top: 5px;
+    box-shadow: 0 8px 25px rgba(171, 30, 36, 0.15);
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.month-selector-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #E4AFB0;
+}
+
+.month-selector-nav {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #AB1E24;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.month-selector-nav:hover {
+    background: #E4AFB0;
+}
+
+.month-selector-year {
+    font-weight: 600;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+.month-selector-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: #E4AFB0;
+    padding: 1px;
+}
+
+.month-selector-item {
+    background: white;
+    border: none;
+    padding: 15px 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    color: #333;
+}
+
+.month-selector-item:hover {
+    background: #f8f9fa;
+    color: #AB1E24;
+}
+
+.month-selector-item.selected {
+    background: #AB1E24;
+    color: white;
+}
+
+/* 隐藏原生输入框 */
+.month-selector input[type="month"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .workhours-controls {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .month-selector-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

@@ -1,0 +1,239 @@
+/* Recettes.css */
+.recette-page {
+    min-height: 100vh;
+    background: #E4AFB0;
+}
+
+.recette-page h1 {
+    text-align: center;
+    color: white;
+    font-size: 2.5rem;
+    margin: 30px 0 40px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    font-weight: 700;
+}
+
+/* Grille des recettes */
+.recette-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Carte de recette */
+.recette-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(171, 30, 36, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.recette-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(171, 30, 36, 0.2);
+    background: rgba(255, 255, 255, 1);
+}
+
+.recette-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 15px rgba(171, 30, 36, 0.1);
+}
+
+.recette-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #AB1E24;
+    text-align: center;
+    margin: 0;
+    padding: 10px 0;
+    border-top: 2px solid #E4AFB0;
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 25px;
+    padding: 40px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(171, 30, 36, 0.3);
+    animation: slideUp 0.4s ease;
+    position: relative;
+}
+
+.modal-content h2 {
+    color: #AB1E24;
+    font-size: 2rem;
+    margin-bottom: 25px;
+    text-align: center;
+    border-bottom: 3px solid #AB1E24;
+    padding-bottom: 15px;
+}
+
+.modal-content h3 {
+    color: #AB1E24;
+    font-size: 1.4rem;
+    margin: 25px 0 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.modal-content h3::before {
+    content: "✨";
+    font-size: 1.2rem;
+}
+
+.modal-content ul, .modal-content ol {
+    margin-left: 20px;
+    color: #555;
+    line-height: 1.6;
+}
+
+.modal-content li {
+    margin-bottom: 10px;
+    padding-left: 10px;
+}
+
+.modal-content ul li::marker {
+    color: #AB1E24;
+    font-size: 1.2em;
+}
+
+.modal-content ol li::marker {
+    color: #AB1E24;
+    font-weight: bold;
+}
+
+.modal-content button {
+    background: #AB1E24;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: block;
+    margin: 30px auto 0;
+    width: 150px;
+}
+
+.modal-content button:hover {
+    background: #8a181d;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(171, 30, 36, 0.4);
+}
+
+/* États de chargement */
+.recette-page > div:first-of-type {
+    text-align: center;
+    color: white;
+    font-size: 1.5rem;
+    margin-top: 50px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .recette-list {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+        padding: 10px;
+    }
+
+    .recette-page h1 {
+        font-size: 2rem;
+        margin: 20px 0 30px;
+    }
+
+    .modal-content {
+        padding: 25px;
+        margin: 20px;
+    }
+
+    .modal-content h2 {
+        font-size: 1.6rem;
+    }
+
+    .modal-content h3 {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .recette-list {
+        grid-template-columns: 1fr;
+    }
+
+    .recette-page h1 {
+        font-size: 1.8rem;
+    }
+
+    .modal-content {
+        padding: 20px;
+    }
+}
+
+/* Scrollbar personnalisée pour le modal */
+.modal-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+    background: #AB1E24;
+    border-radius: 10px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+    background: #8a181d;
+}

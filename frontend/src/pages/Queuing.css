@@ -1,0 +1,128 @@
+/* QueuingApp.css */
+:root {
+    --primary-color: #AB1E24;
+    --primary-hover: #8a181d;
+    --secondary-color: #ffffff;
+    --accent-color: #E4AFB0;
+    --text-primary: #2D3748;
+    --text-secondary: #4A5568;
+    --text-light: #718096;
+    --border-color: #E2E8F0;
+    --border-radius: 12px;
+    --shadow: 0 4px 6px -1px rgba(171, 30, 36, 0.1), 0 2px 4px -1px rgba(171, 30, 36, 0.06);
+    --shadow-hover: 0 10px 15px -3px rgba(171, 30, 36, 0.1), 0 4px 6px -2px rgba(171, 30, 36, 0.05);
+    --transition: all 0.2s ease-in-out;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    color: var(--text-primary);
+    background-color: #f8fafc;
+    line-height: 1.5;
+}
+
+/* Header 样式 */
+.header {
+    background: linear-gradient(135deg, var(--primary-color), #8a181d);
+    color: white;
+    padding: 1.5rem 2rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 2rem;
+}
+
+.header__title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+}
+
+/* QueuingApp 主布局样式 */
+.queuing-app {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem 2rem;
+    margin-top: 1.5rem;
+}
+
+.queuing-app__controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.queuing-app__actions {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.queuing-app__join,
+.queuing-app__reset {
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    min-width: 160px;
+}
+
+.queuing-app__join {
+    background: var(--primary-color);
+    color: white;
+}
+
+.queuing-app__join:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.queuing-app__reset {
+    background: white;
+    color: var(--text-secondary);
+    border: 2px solid var(--border-color);
+}
+
+.queuing-app__reset:hover {
+    border-color: var(--accent-color);
+    color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .queuing-app__controls {
+        grid-template-columns: 1fr;
+    }
+
+    .queuing-app__actions {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .queuing-app__join,
+    .queuing-app__reset {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .header__title {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .queuing-app {
+        padding: 0 1rem 1rem;
+    }
+}
