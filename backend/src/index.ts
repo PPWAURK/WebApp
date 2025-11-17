@@ -10,7 +10,9 @@ import { scheduleRouter } from "./routes/schedule";
 import employeeTypesRouter from "./routes/employeeTypes";
 import employeePositionsRouter from "./routes/employeePositions";
 import { roleRouter } from "./routes/Role";
-import employeeWorkHoursRouter from "./routes/employeeWorkHours"; // Ajout de la nouvelle route
+import employeeWorkHoursRouter from "./routes/employeeWorkHours";
+import authRouter from "./routes/auth";
+import recettesRouter from "./routes/Recettes";
 
 const app = express();
 
@@ -39,7 +41,11 @@ app.use("/api/employee-positions", employeePositionsRouter);
 
 app.use("/api/roles", roleRouter);
 
+app.use("/api/auth", authRouter);
+
 app.use("/api/work-hours", employeeWorkHoursRouter);
+
+app.use("/api/recettes", recettesRouter);
 
 app.listen(4000, "0.0.0.0", () => {
     console.log("🚀 Serveur démarré sur http://0.0.0.0:4000");

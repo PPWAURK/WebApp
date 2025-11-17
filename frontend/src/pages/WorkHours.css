@@ -288,10 +288,13 @@
 /* 修复图表容器尺寸 */
 .workhours-chart-container {
     width: 100%;
-    height: 300px;
-    min-height: 300px;
-    position: relative;
+    height: 320px;
+
+    min-height: 320px;
+    min-width: 0;
+    overflow: hidden;
 }
+
 
 /* 确保图表有明确的尺寸 */
 .recharts-wrapper {

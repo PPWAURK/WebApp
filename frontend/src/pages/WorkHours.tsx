@@ -99,7 +99,13 @@ export default function WorkHours() {
 
             const data = await response.json();
             console.log("📊 获取到的工作时间数据:", data);
-            setEntries(data);
+            setEntries(
+                data.map((e: any) => ({
+                    ...e,
+                    hours_worked: Number(e.hours_worked) || 0
+                }))
+            );
+
         } catch (error) {
             console.error("❌ Erreur chargement heures:", error);
             alert("加载工作时间失败");
@@ -487,7 +493,7 @@ export default function WorkHours() {
                                     {employeeMonthEntries.map((e) => (
                                         <tr key={e.id}>
                                             <td>{e.work_date}</td>
-                                            <td>{e.hours_worked.toFixed(2)}</td>
+                                            <td>{Number(e.hours_worked).toFixed(2)}</td>
                                             <td>{e.notes}</td>
                                             <td className="actions">
                                                 <button onClick={() => handleEdit(e)}>编辑</button>
